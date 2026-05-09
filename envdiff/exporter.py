@@ -68,11 +68,26 @@ def export_markdown(result: EnvDiffResult) -> str:
 
 
 def export(result: EnvDiffResult, fmt: OutputFormat) -> str:
-    """Dispatch export to the appropriate formatter."""
+    """Dispatch export to the appropriate formatter.
+
+    Args:
+        result: The diff result to export.
+        fmt: The desired output format. Must be one of ``"json"``,
+            ``"csv"``, or ``"markdown"``.
+
+    Returns:
+        A string representation of the diff in the requested format.
+
+    Raises:
+        ValueError: If *fmt* is not a recognised output format.
+    """
     if fmt == "json":
         return export_json(result)
     if fmt == "csv":
         return export_csv(result)
     if fmt == "markdown":
         return export_markdown(result)
-    raise ValueError(f"Unsupported export format: {fmt!r}")
+    raise ValueError(
+        f"Unsupported export format: {fmt!r}. "
+        f"Valid formats are: {', '.join(OutputFormat.__args__)}"
+    )
