@@ -109,10 +109,16 @@ def test_watcher_diff_result_reflects_real_diff(env_files):
     left, right = env_files
     _write(left, "A=1\nB=2\n")
     _write(right, "A=1\nC=3\n")
-    results = []
-    watcher = EnvWatcher(left, right, lambda r: results.append(r))
+    cb = MagicMock()
+    watcher = EnvWatcher(left, right, cb)
     watcher.check_once()
-    assert len(results) == 1
-    r = results[0]
-    assert "B" in r.missing_in_right
-    assert "C" in r.missing_in_left
+
+    result = cb.call_args[0][0]
+    assert isinstance(result, EnvDiffResult)
+    # B is only in left, C is only in right
+    left_only_keys = {entry.key for entry in result.left_only}
+    right_only_keys = {entry.key for entry in result.right_only}
+    assert "B" in left_only_keys
+    assert "C" in right_only_keys
+    assert "A" not in left_only_keys
+    assert "A" not in right_only_keys
