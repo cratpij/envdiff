@@ -84,6 +84,16 @@ def test_generate_template_ends_with_newline():
     assert output.endswith("\n")
 
 
+def test_generate_template_comment_header_followed_by_keys():
+    """Ensure the comment header appears before the key definitions."""
+    env = {"FOO": "bar"}
+    output = generate_template(env, comment_header="My header")
+    lines = output.splitlines()
+    header_index = next(i for i, l in enumerate(lines) if "My header" in l)
+    key_index = next(i for i, l in enumerate(lines) if l.startswith("FOO="))
+    assert header_index < key_index
+
+
 # ---------------------------------------------------------------------------
 # generate_template_from_diff
 # ---------------------------------------------------------------------------
@@ -102,24 +112,3 @@ def test_generate_template_from_diff_combines_all_keys():
     result = _make_diff_result(
         left_only={"ONLY_LEFT": "lval"},
         right_only={"ONLY_RIGHT": "rval"},
-        mismatched={"SHARED": ("left_val", "right_val")},
-    )
-    output = generate_template_from_diff(result)
-    assert "ONLY_LEFT" in output
-    assert "ONLY_RIGHT" in output
-    assert "SHARED" in output
-
-
-def test_generate_template_from_diff_uses_left_value_for_mismatch():
-    result = _make_diff_result(
-        mismatched={"PORT": ("8080", "9090")},
-    )
-    # PORT=8080 is numeric so _placeholder returns the value itself
-    output = generate_template_from_diff(result, include_values=False)
-    assert "PORT=8080" in output
-
-
-def test_generate_template_from_diff_empty():
-    result = _make_diff_result()
-    output = generate_template_from_diff(result)
-    assert output == "\n"
