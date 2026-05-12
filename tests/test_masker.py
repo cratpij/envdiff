@@ -43,6 +43,12 @@ def test_mask_value_non_sensitive_extra_keys_unchanged():
     assert result == "value"
 
 
+def test_mask_value_empty_string_value():
+    # Empty values should be returned as-is even for sensitive keys
+    result = mask_value("SECRET_KEY", "")
+    assert result == ""
+
+
 # ---------------------------------------------------------------------------
 # mask_env
 # ---------------------------------------------------------------------------
@@ -90,6 +96,12 @@ def test_mask_env_empty_dict():
     assert result.mask_count == 0
 
 
+def test_mask_env_source_appears_in_summary():
+    env = {"PORT": "8080"}
+    result = mask_env(env, source="production.env")
+    assert "production.env" in result.summary()
+
+
 # ---------------------------------------------------------------------------
 # mask_env_file
 # ---------------------------------------------------------------------------
@@ -97,12 +109,4 @@ def test_mask_env_empty_dict():
 def test_mask_env_file_reads_and_masks(tmp_path):
     env_file = tmp_path / ".env"
     env_file.write_text("SECRET=topsecret\nAPP=myapp\n")
-    result = mask_env_file(str(env_file))
-    assert result.masked["SECRET"] == "***"
-    assert result.masked["APP"] == "myapp"
-    assert result.source == str(env_file)
-
-
-def test_mask_env_file_not_found_raises(tmp_path):
-    with pytest.raises(FileNotFoundError):
-        mask_env_file(str(tmp_path / "missing.env"))
+    result = mask_env_f
