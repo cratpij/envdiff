@@ -24,6 +24,10 @@ class TagResult:
     def has_tag(self, key: str, tag: str) -> bool:
         return tag in self.tags.get(key, set())
 
+    def untagged_keys(self, env: Dict[str, str]) -> List[str]:
+        """Return keys present in env that have no tags assigned."""
+        return sorted(k for k in env if k not in self.tags)
+
     def summary(self) -> str:
         total = len(self.tags)
         if total == 0:
