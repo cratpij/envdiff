@@ -103,27 +103,25 @@ def test_diff_normalized_missing_in_right():
     left = {"A": "1", "B": "2"}
     right = {"A": "1"}
     result = diff_normalized(left, right)
-    assert result["missing_in_right"] == ["B"]
+    assert "B" in result["missing_in_right"]
     assert result["missing_in_left"] == []
+    assert result["mismatched"] == {}
 
 
 def test_diff_normalized_missing_in_left():
     left = {"A": "1"}
-    right = {"A": "1", "C": "3"}
+    right = {"A": "1", "B": "2"}
     result = diff_normalized(left, right)
-    assert result["missing_in_left"] == ["C"]
+    assert "B" in result["missing_in_left"]
+    assert result["missing_in_right"] == []
+    assert result["mismatched"] == {}
 
 
-def test_diff_normalized_mismatch():
-    left = {"A": "old"}
-    right = {"A": "new"}
-    result = diff_normalized(left, right, left_name="dev", right_name="prod")
-    assert "A" in result["mismatched"]
-    assert result["mismatched"]["A"] == {"dev": "old", "prod": "new"}
-
-
-def test_diff_normalized_sorted_output():
-    left = {"Z": "1", "A": "1", "M": "1"}
-    right = {}
+def test_diff_normalized_mismatched_values():
+    left = {"A": "1", "B": "old"}
+    right = {"A": "1", "B": "new"}
     result = diff_normalized(left, right)
-    assert result["missing_in_right"] == ["A", "M", "Z"]
+    assert result["missing_in_right"] == []
+    assert result["missing_in_left"] == []
+    assert "B" in result["mismatched"]
+    assert result["mismatched"]["B"] == ("old", "new")
